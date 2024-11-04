@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -262,6 +263,35 @@ public class BaseDeDatos {
 
     public List<Genero> consultarGeneros() {
         return generos;
+    }
+
+    public List<Cancion> listarCanciones(String filtroTitulo, String filtroGenero, Integer filtroDuracion, boolean ordenarPorTitulo) {
+        return canciones.stream()
+                .filter(c -> filtroTitulo == null || c.getTitulo().equalsIgnoreCase(filtroTitulo))
+                .filter(c -> filtroGenero == null || generos.stream().anyMatch(g -> g.getId() == c.getIdGenero() && g.getNombreGenero().equalsIgnoreCase(filtroGenero)))
+                .filter(c -> filtroDuracion == null || c.getDuracion() == filtroDuracion)
+                .sorted(ordenarPorTitulo ? Comparator.comparing(Cancion::getTitulo) : Comparator.comparingInt(Cancion::getId))
+                .collect(Collectors.toList());
+    }
+
+    // Metodo para listar álbumes con filtros y ordenación
+    public List<Album> listarAlbumes(String filtroTitulo, String filtroGeneroPrincipal, Integer filtroAnioLanzamiento, boolean ordenarPorTitulo) {
+        return albums.stream()
+                .filter(a -> filtroTitulo == null || a.getTitulo().equalsIgnoreCase(filtroTitulo))
+                .filter(a -> filtroGeneroPrincipal == null || a.getGeneroPrincipal().equalsIgnoreCase(filtroGeneroPrincipal))
+                .filter(a -> filtroAnioLanzamiento == null || a.getAnioLanzamiento() == filtroAnioLanzamiento)
+                .sorted(ordenarPorTitulo ? Comparator.comparing(Album::getTitulo) : Comparator.comparingInt(Album::getId))
+                .collect(Collectors.toList());
+    }
+
+    // Método para listar artistas con filtros y ordenación
+    public List<Artista> listarArtistas(String filtroNombre, String filtroNacionalidad, String filtroGenero, boolean ordenarPorNombre) {
+        return artistas.stream()
+                .filter(a -> filtroNombre == null || a.getNombre().equalsIgnoreCase(filtroNombre))
+                .filter(a -> filtroNacionalidad == null || a.getNacionalidad().equalsIgnoreCase(filtroNacionalidad))
+                .filter(a -> filtroGenero == null || a.getGeneros().equalsIgnoreCase(filtroGenero))
+                .sorted(ordenarPorNombre ? Comparator.comparing(Artista::getNombre) : Comparator.comparingInt(Artista::getId))
+                .collect(Collectors.toList());
     }
 
     // Métodos auxiliares para obtener entidades por ID
