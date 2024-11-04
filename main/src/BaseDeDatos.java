@@ -8,10 +8,6 @@ public class BaseDeDatos {
     private List<Album> albums = new ArrayList<>();
     private List<Artista> artistas = new ArrayList<>();
     private List<Genero> generos = new ArrayList<>();
-    private int nextCancionId = 3;
-    private int nextAlbumId = 3;
-    private int nextArtistaId = 3;
-    private int nextGeneroId = 3;
 
     public BaseDeDatos() {
         cargarDatosEjemplo(); // Llama a cargar datos de ejemplo automáticamente
@@ -46,6 +42,7 @@ public class BaseDeDatos {
         System.out.println("Datos de ejemplo cargados en el sistema.");
     }
 
+    //Case 1
     public void agregarCancion(String titulo, int duracion, int idAlbum, int idArtista, int idGenero) {
         if (!existeAlbum(idAlbum)) {
             System.out.println("Error: El álbum con ID " + idAlbum + " no existe.");
@@ -60,20 +57,28 @@ public class BaseDeDatos {
             return;
         }
 
+        if (duracion <= 0) {
+            System.out.println("Error: La duración de la canción debe ser un valor positivo.");
+            return;
+        }
+
         // Si todas las verificaciones son correctas, se crea y agrega la canción
-        Cancion nuevaCancion = new Cancion(nextCancionId++, titulo, duracion, idAlbum, idArtista, idGenero);
+        int cancionId = canciones.size() + 1;
+        Cancion nuevaCancion = new Cancion(cancionId, titulo, duracion, idAlbum, idArtista, idGenero);
         canciones.add(nuevaCancion);
         System.out.println("Canción agregada correctamente: " + titulo);
     }
 
 
     public void agregarArtista(String nombre, String fechaNacimiento, String nacionalidad, String generos) {
-        Artista nuevoArtista = new Artista(nextArtistaId++, nombre, fechaNacimiento, nacionalidad, generos);
+        int artistaId = artistas.size() + 1;
+        Artista nuevoArtista = new Artista(artistaId, nombre, fechaNacimiento, nacionalidad, generos);
         artistas.add(nuevoArtista);
     }
 
         public void agregarGenero(String nombreGenero, String descripcion) {
-        Genero nuevoGenero = new Genero(nextGeneroId++, nombreGenero, descripcion);
+        int generoId = generos.size() + 1;
+        Genero nuevoGenero = new Genero(generoId, nombreGenero, descripcion);
         generos.add(nuevoGenero);
     }
 
@@ -267,29 +272,39 @@ public class BaseDeDatos {
 
     public List<Cancion> listarCanciones(String filtroTitulo, String filtroGenero, Integer filtroDuracion, boolean ordenarPorTitulo) {
         return canciones.stream()
-                .filter(c -> filtroTitulo == null || c.getTitulo().equalsIgnoreCase(filtroTitulo))
-                .filter(c -> filtroGenero == null || generos.stream().anyMatch(g -> g.getId() == c.getIdGenero() && g.getNombreGenero().equalsIgnoreCase(filtroGenero)))
+                .filter(c -> filtroTitulo == null || filtroTitulo.isEmpty() || c.getTitulo().equalsIgnoreCase(filtroTitulo))
+                .filter(c -> {
+                    if (filtroGenero == null || filtroGenero.isEmpty()) return true;
+                    Genero genero = obtenerGeneroPorId(c.getIdGenero()); // Usamos el metodo directo
+                    return genero != null && genero.getNombreGenero().equalsIgnoreCase(filtroGenero);
+                })
                 .filter(c -> filtroDuracion == null || c.getDuracion() == filtroDuracion)
                 .sorted(ordenarPorTitulo ? Comparator.comparing(Cancion::getTitulo) : Comparator.comparingInt(Cancion::getId))
                 .collect(Collectors.toList());
+
     }
 
     // Metodo para listar álbumes con filtros y ordenación
-    public List<Album> listarAlbumes(String filtroTitulo, String filtroGeneroPrincipal, Integer filtroAnioLanzamiento, boolean ordenarPorTitulo) {
+    public List<Album> listarAlbumes(String filtroTitulo, String filtroGeneroPrincipal, Integer filtroAnioLanzamiento, String filtroNombreArtista, boolean ordenarPorTitulo) {
         return albums.stream()
-                .filter(a -> filtroTitulo == null || a.getTitulo().equalsIgnoreCase(filtroTitulo))
-                .filter(a -> filtroGeneroPrincipal == null || a.getGeneroPrincipal().equalsIgnoreCase(filtroGeneroPrincipal))
-                .filter(a -> filtroAnioLanzamiento == null || a.getAnioLanzamiento() == filtroAnioLanzamiento)
-                .sorted(ordenarPorTitulo ? Comparator.comparing(Album::getTitulo) : Comparator.comparingInt(Album::getId))
+                .filter(album -> filtroTitulo == null || filtroTitulo.isEmpty() || album.getTitulo().equalsIgnoreCase(filtroTitulo))
+                .filter(album -> filtroAnioLanzamiento == null || album.getAnioLanzamiento() == filtroAnioLanzamiento)
+                .filter(album -> {
+                    if (filtroNombreArtista == null || filtroNombreArtista.isEmpty()) return true;
+                    Artista artista = obtenerArtistaPorId(album.getIdArtista());
+                    return artista != null && artista.getNombre().equalsIgnoreCase(filtroNombreArtista);
+                })
+                .filter(album -> filtroGeneroPrincipal == null || filtroGeneroPrincipal.isEmpty() || album.getGeneroPrincipal().equalsIgnoreCase(filtroGeneroPrincipal))
+                .sorted(ordenarPorTitulo ? Comparator.comparing(Album::getTitulo) : Comparator.comparingInt(Album::getAnioLanzamiento))
                 .collect(Collectors.toList());
     }
 
     // Método para listar artistas con filtros y ordenación
     public List<Artista> listarArtistas(String filtroNombre, String filtroNacionalidad, String filtroGenero, boolean ordenarPorNombre) {
         return artistas.stream()
-                .filter(a -> filtroNombre == null || a.getNombre().equalsIgnoreCase(filtroNombre))
-                .filter(a -> filtroNacionalidad == null || a.getNacionalidad().equalsIgnoreCase(filtroNacionalidad))
-                .filter(a -> filtroGenero == null || a.getGeneros().equalsIgnoreCase(filtroGenero))
+                .filter(a -> filtroNombre == null || filtroNombre.isEmpty() || a.getNombre().equalsIgnoreCase(filtroNombre))
+                .filter(a -> filtroNacionalidad == null || filtroNacionalidad.isEmpty() || a.getNacionalidad().equalsIgnoreCase(filtroNacionalidad))
+                .filter(a -> filtroGenero == null || filtroGenero.isEmpty() || a.getGeneros().equalsIgnoreCase(filtroGenero))
                 .sorted(ordenarPorNombre ? Comparator.comparing(Artista::getNombre) : Comparator.comparingInt(Artista::getId))
                 .collect(Collectors.toList());
     }

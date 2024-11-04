@@ -17,9 +17,12 @@ public class Main {
             System.out.println("6. Consultar Álbumes");
             System.out.println("7. Agregar Artista");
             System.out.println("8. Consultar Artistas");
-            System.out.println("9. Agregar Género");
-            System.out.println("10. Consultar Géneros");
-            System.out.println("11. Salir");
+            System.out.println("9. Editar Album");
+            System.out.println("10. Editar Artista");
+            System.out.println("11. Agregar Género");
+            System.out.println("12. Consultar Géneros");
+            System.out.println("13. Listas de todo");
+            System.out.println("14. Salir");
             System.out.print("Selecciona una opción: ");
             opcion = scanner.nextInt();
             scanner.nextLine(); // Limpiar el buffer
@@ -252,11 +255,13 @@ public class Main {
                             System.out.print("Filtro por año de lanzamiento del álbum (deja en blanco para no filtrar): ");
                             String filtroAnioLanzamientoInput = scanner.nextLine();
                             Integer filtroAnioLanzamiento = filtroAnioLanzamientoInput.isEmpty() ? null : Integer.parseInt(filtroAnioLanzamientoInput);
+                            System.out.print("Filtro por nombre del Artista del álbum (deja en blanco para no filtrar): ");
+                            String filtroArtistaNombreAlbum = scanner.nextLine();
                             System.out.print("¿Ordenar por título? (true/false): ");
                             boolean ordenarPorTituloAlbum = scanner.nextBoolean();
                             scanner.nextLine(); // Limpiar el buffer
 
-                            bd.listarAlbumes(filtroTituloAlbum, filtroGeneroAlbum, filtroAnioLanzamiento, ordenarPorTituloAlbum)
+                            bd.listarAlbumes(filtroTituloAlbum, filtroGeneroAlbum, filtroAnioLanzamiento,filtroArtistaNombreAlbum, ordenarPorTituloAlbum)
                                     .forEach(album -> System.out.println("Álbum: " + album.getTitulo() + ", Año de lanzamiento: " + album.getAnioLanzamiento()));
                             break;
 
